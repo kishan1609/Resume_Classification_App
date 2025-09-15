@@ -38,7 +38,7 @@ def extract_text(file):
 # -----------------------------
 # Streamlit UI
 # -----------------------------
-st.title("📄 Resume Classification (Decision Tree)")
+st.title("📄 Resume Classification")
 
 st.write("Upload a resume file or paste text manually to classify.")
 
