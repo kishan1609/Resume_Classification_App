@@ -1,31 +1,26 @@
 import streamlit as st
 import pickle
 import re
+import docx  # for .docx support
 
-# Load the saved Decision Tree model and TF-IDF vectorizer
-with open("model_DT.pkl", "rb") as f:
+# Load pipeline (TF-IDF + Decision Tree)
+with open("resume_classifier.pkl", "rb") as f:
     model = pickle.load(f)
 
-with open("tfv.pkl", "rb") as f:
-    vectorizer = pickle.load(f)
-
-# Preprocessing function (keep it consistent with your notebook)
+# Preprocessing function
 def preprocess_text(text):
     text = text.lower()
     text = re.sub(r'[^a-zA-Z\s]', '', text)
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
-# Streamlit app setup
-st.set_page_config(page_title="Resume Classification (Decision Tree)", page_icon="🌳", layout="centered")
+# Streamlit UI
+st.set_page_config(page_title="Resume Classification", page_icon="📄", layout="centered")
 
 st.title("🌳 Resume Classification Project")
-st.write("This app classifies resumes into categories using a **Decision Tree model**.")
+st.write("This app classifies resumes into categories using a **Decision Tree model** pipeline.")
 
-# Input option: text or file
-import docx
-
-# Input option: text or file
+# Input method
 option = st.radio("Choose input method:", ("Paste Resume Text", "Upload .txt File", "Upload .docx File"))
 
 resume_text = ""
@@ -43,16 +38,14 @@ elif option == "Upload .docx File":
         doc = docx.Document(uploaded_file)
         resume_text = " ".join([para.text for para in doc.paragraphs])
 
-# Prediction
+# Prediction button
 if st.button("🔍 Classify Resume"):
     if resume_text.strip() != "":
         clean_text = preprocess_text(resume_text)
-        vectorized_text = vectorizer.transform([clean_text])
-        prediction = model.predict(vectorized_text)[0]
-
+        prediction = model.predict([clean_text])[0]
         st.success(f"✅ Predicted Category: **{prediction}**")
     else:
         st.warning("⚠️ Please enter or upload some resume text.")
 
 st.markdown("---")
-st.caption("🚀 Deployed with Streamlit | Model: Decision Tree Classifier")
+st.caption("🚀 Deployed with Streamlit | Model: Decision Tree Classifier Pipeline")
