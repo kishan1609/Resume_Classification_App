@@ -23,15 +23,25 @@ st.title("🌳 Resume Classification Project")
 st.write("This app classifies resumes into categories using a **Decision Tree model**.")
 
 # Input option: text or file
-option = st.radio("Choose input method:", ("Paste Resume Text", "Upload .docx File"))
+import docx
+
+# Input option: text or file
+option = st.radio("Choose input method:", ("Paste Resume Text", "Upload .txt File", "Upload .docx File"))
 
 resume_text = ""
 if option == "Paste Resume Text":
     resume_text = st.text_area("Enter Resume Text Below:", height=200)
+
+elif option == "Upload .txt File":
+    uploaded_file = st.file_uploader("Upload a resume (.txt format only)", type=["txt"])
+    if uploaded_file:
+        resume_text = uploaded_file.read().decode("utf-8")
+
 elif option == "Upload .docx File":
     uploaded_file = st.file_uploader("Upload a resume (.docx format only)", type=["docx"])
     if uploaded_file:
-        resume_text = uploaded_file.read().decode("utf-8")
+        doc = docx.Document(uploaded_file)
+        resume_text = " ".join([para.text for para in doc.paragraphs])
 
 # Prediction
 if st.button("🔍 Classify Resume"):
