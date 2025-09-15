@@ -4,7 +4,7 @@ import docx2txt
 import PyPDF2
 
 # -----------------------------
-# Load Model and Vectorizer
+# Load Model, Vectorizer, and LabelEncoder
 # -----------------------------
 @st.cache_resource
 def load_model():
@@ -12,9 +12,11 @@ def load_model():
         model = pickle.load(f)
     with open("tfidf_vectorizer.pkl", "rb") as f:
         tfv = pickle.load(f)
-    return model, tfv
+    with open("label_encoder.pkl", "rb") as f:
+        le = pickle.load(f)
+    return model, tfv, le
 
-model, tfv = load_model()
+model, tfv, le = load_model()
 
 # -----------------------------
 # Helper: Extract text from file
@@ -52,7 +54,8 @@ if uploaded_file is not None:
 if st.button("Predict"):
     if resume_text.strip():
         vectorized_text = tfv.transform([resume_text])
-        prediction = model.predict(vectorized_text)[0]
-        st.success(f"✅ Predicted Category: **{prediction}**")
+        pred_num = model.predict(vectorized_text)[0]
+        pred_label = le.inverse_transform([pred_num])[0]   # convert back to category name
+        st.success(f"✅ Predicted Category: **{pred_label}**")
     else:
         st.warning("⚠️ Please provide resume text or upload a file.")
