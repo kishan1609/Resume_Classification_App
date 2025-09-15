@@ -1,5 +1,7 @@
 import streamlit as st
 import pickle
+import docx2txt
+import PyPDF2
 
 # -----------------------------
 # Load Model and Vectorizer
@@ -15,14 +17,37 @@ def load_model():
 model, tfv = load_model()
 
 # -----------------------------
+# Helper: Extract text from file
+# -----------------------------
+def extract_text(file):
+    text = ""
+    if file.name.endswith(".txt"):
+        text = file.read().decode("utf-8", errors="ignore")
+    elif file.name.endswith(".docx"):
+        text = docx2txt.process(file)
+    elif file.name.endswith(".pdf"):
+        reader = PyPDF2.PdfReader(file)
+        for page in reader.pages:
+            text += page.extract_text() or ""
+    else:
+        st.error("❌ Unsupported file format. Please upload .txt, .docx, or .pdf")
+    return text
+
+# -----------------------------
 # Streamlit UI
 # -----------------------------
 st.title("📄 Resume Classification (Decision Tree)")
 
-st.write("This app classifies resumes into categories using a Decision Tree model.")
+st.write("Upload a resume file or paste text manually to classify.")
 
-# User input
+# Option 1: Text area
 resume_text = st.text_area("Paste Resume Text Here:")
+
+# Option 2: File upload
+uploaded_file = st.file_uploader("Or upload a file (.txt, .docx, .pdf)", type=["txt", "docx", "pdf"])
+
+if uploaded_file is not None:
+    resume_text = extract_text(uploaded_file)
 
 if st.button("Predict"):
     if resume_text.strip():
@@ -30,4 +55,4 @@ if st.button("Predict"):
         prediction = model.predict(vectorized_text)[0]
         st.success(f"✅ Predicted Category: **{prediction}**")
     else:
-        st.warning("⚠️ Please enter some resume text.")
+        st.warning("⚠️ Please provide resume text or upload a file.")
